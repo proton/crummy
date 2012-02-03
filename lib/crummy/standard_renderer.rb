@@ -53,8 +53,8 @@ module Crummy
         options[:ul_class] = "breadcrumb" if options[:ul_class] == nil
         options[:ul_id] = "" if options[:ul_id] == nil
         crumb_string = crumbs.collect do |crumb|
-          crumb_to_html_list(crumb, options[:links], options[:li_class], options[:active_li_class], options[:first_class], options[:last_class], (crumb == crumbs.first), (crumb == crumbs.last))
-        end * options[:separator]
+          crumb_to_html_list(crumb, options[:links], options[:li_class], options[:active_li_class], options[:first_class], options[:last_class], (crumb == crumbs.first), (crumb == crumbs.last), options[:separator])
+        end
         crumb_string = "<ul class=\"#{options[:ul_class]}\" id=\"#{options[:ul_id]}\">" + crumb_string + "</ul>"
         crumb_string
       when :xml
@@ -76,7 +76,7 @@ module Crummy
       url && links ? link_to(name, url, :class => html_classes) : name
     end
 
-    def crumb_to_html_list(crumb, links, li_class, active_li_class, first_class, last_class, is_first, is_last)
+    def crumb_to_html_list(crumb, links, li_class, active_li_class, first_class, last_class, is_first, is_last, separator)
       name, url = crumb
       html_classes = []
       html_classes << first_class if is_first
