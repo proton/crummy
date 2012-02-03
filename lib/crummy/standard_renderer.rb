@@ -9,18 +9,18 @@ module Crummy
     #
     # Takes 3 options:
     # The output format. Can either be xml or html. Default :html
-    #   :format => (:html|:xml) 
-    # The separator text. It does not assume you want spaces on either side so you must specify. Default +&raquo;+ for :html and +crumb+ for xml
-    #   :separator => string  
+    #   :format => (:html|:xml)
+    # The separator text. It does not assume you want spaces on either side so you must specify. Default +&raquo;+ for :html and :html_list and +crumb+ for :xml
+    #   :separator => string
     # Render links in the output. Default +true+
-    #   :link => boolean        
-    # 
+    #   :link => boolean
+    #
     #   Examples:
     #   render_crumbs                         #=> <a href="/">Home</a> &raquo; <a href="/businesses">Businesses</a>
     #   render_crumbs :separator => ' | '     #=> <a href="/">Home</a> | <a href="/businesses">Businesses</a>
     #   render_crumbs :format => :xml         #=> <crumb href="/">Home</crumb><crumb href="/businesses">Businesses</crumb>
     #   render_crumbs :format => :html_list   #=> <ul class="" id=""><li class=""><a href="/">Home</a></li><li class=""><a href="/">Businesses</a></li></ul>
-    #   
+    #
     # With :format => :html_list you can specify additional params: active_li_class, li_class, ul_class, ul_id
     # The only argument is for the separator text. It does not assume you want spaces on either side so you must specify. Defaults to +&raquo;+
     #
@@ -30,8 +30,9 @@ module Crummy
       options[:format] = :html if options[:format] == nil
       return '' if options[:skip_if_blank] && crumbs.count < 1
       if options[:separator] == nil
-        options[:separator] = " &raquo; " if options[:format] == :html 
-        options[:separator] = "crumb" if options[:format] == :xml 
+        options[:separator] = " &raquo; " if options[:format] == :html
+        options[:separator] = "&raquo;" if options[:format] == :html_list
+        options[:separator] = "crumb" if options[:format] == :xml
       end
       options[:links] = true if options[:links] == nil
       options[:first_class] ||= ''
@@ -47,9 +48,9 @@ module Crummy
         # In html_list format there are no separator, but may be
         options[:separator] = "" if options[:separator] == nil
         # Lets set default values for special options of html_list format
-        options[:active_li_class] = "" if options[:active_li_class] == nil
+        options[:active_li_class] = "active" if options[:active_li_class] == nil
         options[:li_class] = "" if options[:li_class] == nil
-        options[:ul_class] = "" if options[:ul_class] == nil
+        options[:ul_class] = "breadcrumb" if options[:ul_class] == nil
         options[:ul_id] = "" if options[:ul_id] == nil
         crumb_string = crumbs.collect do |crumb|
           crumb_to_html_list(crumb, options[:links], options[:li_class], options[:active_li_class], options[:first_class], options[:last_class], (crumb == crumbs.first), (crumb == crumbs.last))
@@ -74,7 +75,7 @@ module Crummy
       name, url = crumb
       url && links ? link_to(name, url, :class => html_classes) : name
     end
-    
+
     def crumb_to_html_list(crumb, links, li_class, active_li_class, first_class, last_class, is_first, is_last)
       name, url = crumb
       html_classes = []
@@ -82,9 +83,9 @@ module Crummy
       html_classes << last_class if is_last
       html_classes << active_li_class unless url && links
       html_classes << li_class if !is_first && !is_last && url && links
-      url && links ? "<li class=\"#{html_classes.join(' ').strip}\"><a href=\"#{url}\">#{name}</a></li>" : "<li class=\"#{html_classes.join(' ').strip}\"><span>#{name}</span></li>"
+      url && links ? "<li class=\"#{html_classes.join(' ').strip}\"><a href=\"#{url}\">#{name}</a> <span class=\"divider\">#{separator}</span></li>" : "<li class=\"#{html_classes.join(' ').strip}\"><span>#{name}</span></li>"
     end
-  
+
     def crumb_to_xml(crumb, links, separator, is_first, is_last)
       name, url = crumb
       url && links ? "<#{separator} href=\"#{url}\">#{name}</#{separator}>" : "<#{separator}>#{name}</#{separator}>"
