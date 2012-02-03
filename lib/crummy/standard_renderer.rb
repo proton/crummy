@@ -54,7 +54,7 @@ module Crummy
         options[:ul_id] = "" if options[:ul_id] == nil
         crumb_string = crumbs.collect do |crumb|
           crumb_to_html_list(crumb, options[:links], options[:li_class], options[:active_li_class], options[:first_class], options[:last_class], (crumb == crumbs.first), (crumb == crumbs.last), options[:separator])
-        end
+        end * options[:separator]
         crumb_string = "<ul class=\"#{options[:ul_class]}\" id=\"#{options[:ul_id]}\">" + crumb_string + "</ul>"
         crumb_string
       when :xml
