@@ -27,16 +27,13 @@ module Crummy
     #   render_crumbs(" . ")  #=> <a href="/">Home</a> . <a href="/businesses">Businesses</a>
     #
     def render_crumbs(crumbs, options = {})
-      options[:format] = :html if options[:format] == nil
+      options[:skip_if_blank] ||= Crummy.configuration.skip_if_blank
       return '' if options[:skip_if_blank] && crumbs.count < 1
-      if options[:separator] == nil
-        options[:separator] = " &raquo; " if options[:format] == :html
-        options[:separator] = "&raquo;" if options[:format] == :html_list
-        options[:separator] = "crumb" if options[:format] == :xml
-      end
-      options[:links] = true if options[:links] == nil
-      options[:first_class] ||= ''
-      options[:last_class] ||= ''
+      options[:format] ||= Crummy.configuration.format
+      options[:separator] ||= Crummy.configuration.send(:"#{options[:format]}_separator")
+      options[:links] ||= Crummy.configuration.links
+      options[:first_class] ||= Crummy.configuration.first_class
+      options[:last_class] ||= Crummy.configuration.last_class
 
       case options[:format]
       when :html
@@ -45,17 +42,15 @@ module Crummy
         end * options[:separator]
         crumb_string
       when :html_list
-        # In html_list format there are no separator, but may be
-        options[:separator] = "" if options[:separator] == nil
-        # Lets set default values for special options of html_list format
-        options[:active_li_class] = "active" if options[:active_li_class] == nil
-        options[:li_class] = "" if options[:li_class] == nil
-        options[:ul_class] = "breadcrumb" if options[:ul_class] == nil
-        options[:ul_id] = "" if options[:ul_id] == nil
+        # Let's set values for special options of html_list format
+        options[:active_li_class] ||= Crummy.configuration.active_li_class
+        options[:li_class] ||= Crummy.configuration.li_class
+        options[:ul_class] ||= Crummy.configuration.ul_class
+        options[:ul_id] ||= Crummy.configuration.ul_id
         crumb_string = crumbs.collect do |crumb|
-          crumb_to_html_list(crumb, options[:links], options[:li_class], options[:active_li_class], options[:first_class], options[:last_class], (crumb == crumbs.first), (crumb == crumbs.last), options[:separator])
-        end * ''
-        crumb_string = "<nav><ul class=\"#{options[:ul_class]}\" id=\"#{options[:ul_id]}\">" + crumb_string + "</ul></nav>"
+          crumb_to_html_list(crumb, options[:links], options[:li_class], options[:active_li_class], options[:first_class], options[:last_class], (crumb == crumbs.first), (crumb == crumbs.last))
+        end * options[:separator]
+        crumb_string = content_tag(:ul, crumb_string, :class => options[:ul_class], :id => options[:ul_id])
         crumb_string
       when :xml
         crumbs.collect do |crumb|
@@ -83,12 +78,12 @@ module Crummy
       html_classes << last_class if is_last
       html_classes << active_li_class unless url && links
       html_classes << li_class if !is_first && !is_last && url && links
-      url && links ? "<li class=\"#{html_classes.join(' ').strip}\"><a href=\"#{url}\">#{name}</a><span class=\"divider\">#{separator}</span></li>" : "<li class=\"#{html_classes.join(' ').strip}\"><span>#{name}</span></li>"
+      content_tag(:li, url && links ? link_to(name, url) : content_tag(:span, name), :class => html_classes.join(' ').strip)
     end
 
     def crumb_to_xml(crumb, links, separator, is_first, is_last)
       name, url = crumb
-      url && links ? "<#{separator} href=\"#{url}\">#{name}</#{separator}>" : "<#{separator}>#{name}</#{separator}>"
+      content_tag(separator, name, :href => (url && links ? url : nil))
     end
   end
 end
