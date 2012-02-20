@@ -48,8 +48,8 @@ module Crummy
         options[:ul_class] ||= Crummy.configuration.ul_class
         options[:ul_id] ||= Crummy.configuration.ul_id
         crumb_string = crumbs.collect do |crumb|
-          crumb_to_html_list(crumb, options[:links], options[:li_class], options[:active_li_class], options[:first_class], options[:last_class], (crumb == crumbs.first), (crumb == crumbs.last))
-        end * options[:separator]
+          crumb_to_html_list(crumb, options[:links], options[:li_class], options[:active_li_class], options[:first_class], options[:last_class], (crumb == crumbs.first), (crumb == crumbs.last), options[:separator])
+        end * ''
         crumb_string = content_tag(:ul, crumb_string, :class => options[:ul_class], :id => options[:ul_id])
         crumb_string
       when :xml
@@ -78,7 +78,7 @@ module Crummy
       html_classes << last_class if is_last
       html_classes << active_li_class unless url && links
       html_classes << li_class if !is_first && !is_last && url && links
-      content_tag(:li, url && links ? link_to(name, url) : content_tag(:span, name), :class => html_classes.join(' ').strip)
+      content_tag(:li, url && links ? link_to(name, url) + content_tag(:span, separator, :class => 'divider') : content_tag(:span, name), :class => html_classes.join(' ').strip)
     end
 
     def crumb_to_xml(crumb, links, separator, is_first, is_last)
