@@ -78,7 +78,9 @@ module Crummy
       html_classes << last_class if is_last
       html_classes << active_li_class unless url && links
       html_classes << li_class if !is_first && !is_last && url && links
-      content_tag(:li, url && links ? link_to(name, url) + content_tag(:span, separator, :class => 'divider') : content_tag(:span, name), :class => html_classes.join(' ').strip)
+      crum_content = url && links ? link_to(name, url) : content_tag(:span, name)
+      crum_content += content_tag(:span, separator, :class => 'divider') unless is_last
+      content_tag(:li, crum_content, :class => html_classes.join(' ').strip)
     end
 
     def crumb_to_xml(crumb, links, separator, is_first, is_last)
